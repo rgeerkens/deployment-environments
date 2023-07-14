@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the AKS cluster."
+      }
+    },
+    "nodeCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of nodes in the cluster."
+      }
+    }
+  },
+  "variables": {
+    "location": "[resourceGroup().location]",
+    "dnsPrefix": "[toLower(concat('dns', uniqueString(resourceGroup().id)))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2023-01-02-preview",
+      "name": "[parameters('clusterName')]",
+      "location": "[variables('location')]",
+      "sku": {
+                "name": "Basic",
+                "tier": "Free"
+      },
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "dnsPrefix": "[variables('dnsPrefix')]",
+        "enableRBAC": true,
+        "agentPoolProfiles": [
+          {
+            "name": "agentpool",
+            "count": "[parameters('nodeCount')]",
+            "vmSize": "Standard_B4ms",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "kubeletDiskType": "OS",
+            "maxPods": 110,
+            "type": "VirtualMachineScaleSets",
+            "enableAutoScaling": false,
+            "powerState": {
+                "code": "Running"
+            },
+            "orchestratorVersion": "1.25.6",
+            "enableNodePublicIP": false,
+            "mode": "System",
+            "osType": "Linux",
+            "osSKU": "Ubuntu",
+            "enableFIPS": false
+          }
+        ],
+        "servicePrincipalProfile": {
+                      "clientId": "msi"
+        },
+        "addonProfiles": {
+            "azureKeyvaultSecretsProvider": {
+                "enabled": false
+            },
+            "azurepolicy": {
+                "enabled": false
+            }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "kubeConfig": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('clusterName'))).kubeConfig]"
+    }
+  }
+}

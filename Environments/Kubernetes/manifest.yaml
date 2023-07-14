@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://github.com/Azure/deployment-environments/releases/download/2022-11-11-preview/manifest.schema.json
+name: Kubernetes
+version: 1.0.0
+summary: Azure Kubernetes Environment
+description: Deploys an AKS Cluster
+runner: ARM
+templatePath: azuredeploy.json
+
+parameters:
+  - id: clusterName
+    name: clusterName
+    description: 'Name of the AKS Cluster.'
+    type: string
+
+  - id: nodeCount
+    name: nodeCount
+    description: 'Nodes in cluster.'
+    type: integer
