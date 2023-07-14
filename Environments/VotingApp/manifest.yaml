@@ -15,4 +15,4 @@ parameters:
   - id: nodeCount
     name: nodeCount
     description: 'Nodes in cluster.'
-    type: int
+    type: integer
