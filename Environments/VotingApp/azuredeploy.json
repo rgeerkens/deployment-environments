@@ -80,6 +80,15 @@
             }
           }
         ],
+        "identity": {
+          "type": "SystemAssigned",
+          "roleAssignments": [
+            {
+              "principalId": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('clusterName'))).identity.principalId]",
+              "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+            }
+          ]
+        },
         "ipAddress": {
           "type": "Public",
           "ports": [
