@@ -23,9 +23,13 @@
   "resources": [
     {
       "type": "Microsoft.ContainerService/managedClusters",
-      "apiVersion": "2022-05-02-preview",
+      "apiVersion": "2023-01-02-preview",
       "name": "[parameters('clusterName')]",
       "location": "[variables('location')]",
+      "sku": {
+                "name": "Basic",
+                "tier": "Free"
+      },
       "identity": {
         "type": "SystemAssigned"
       },
@@ -34,12 +38,37 @@
         "enableRBAC": true,
         "agentPoolProfiles": [
           {
-            "name": "nodepool1",
+            "name": "agentpool",
             "count": "[parameters('nodeCount')]",
-            "vmSize": "Standard_DS2_v2",
-            "osDiskSizeGB": 30
+            "vmSize": "Standard_B4ms",
+            "osDiskSizeGB": 128,
+            "osDiskType": "Managed",
+            "kubeletDiskType": "OS",
+            "maxPods": 110,
+            "type": "VirtualMachineScaleSets",
+            "enableAutoScaling": false,
+            "powerState": {
+                "code": "Running"
+            },
+            "orchestratorVersion": "1.25.6",
+            "enableNodePublicIP": false,
+            "mode": "System",
+            "osType": "Linux",
+            "osSKU": "Ubuntu",
+            "enableFIPS": false
           }
-        ]
+        ],
+        "servicePrincipalProfile": {
+                      "clientId": "msi"
+        },
+        "addonProfiles": {
+            "azureKeyvaultSecretsProvider": {
+                "enabled": false
+            },
+            "azurepolicy": {
+                "enabled": false
+            }
+        }
       }
     }
   ],
