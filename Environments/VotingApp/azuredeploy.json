@@ -27,8 +27,8 @@
       "name": "[parameters('clusterName')]",
       "location": "[variables('location')]",
       "sku": {
-        "name": "Basic",
-        "tier": "Free"
+                "name": "Basic",
+                "tier": "Free"
       },
       "identity": {
         "type": "SystemAssigned"
@@ -48,7 +48,7 @@
             "type": "VirtualMachineScaleSets",
             "enableAutoScaling": false,
             "powerState": {
-              "code": "Running"
+                "code": "Running"
             },
             "orchestratorVersion": "1.25.6",
             "enableNodePublicIP": false,
@@ -59,15 +59,15 @@
           }
         ],
         "servicePrincipalProfile": {
-          "clientId": "msi"
+                      "clientId": "msi"
         },
         "addonProfiles": {
-          "azureKeyvaultSecretsProvider": {
-            "enabled": false
-          },
-          "azurepolicy": {
-            "enabled": false
-          }
+            "azureKeyvaultSecretsProvider": {
+                "enabled": false
+            },
+            "azurepolicy": {
+                "enabled": false
+            }
         }
       }
     }

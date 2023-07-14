@@ -2,7 +2,7 @@
 name: Voting-App
 version: 1.0.0
 summary: Azure Voting-App Environment
-description: Deploys an Voting App on AKS
+description: Deploys n Voting App on AKS
 runner: ARM
 templatePath: azuredeploy.json
 
