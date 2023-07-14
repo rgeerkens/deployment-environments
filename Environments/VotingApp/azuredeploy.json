@@ -84,7 +84,7 @@
           "scope": "inner"
         },
         "templateLink": {
-          "uri": "azure-voting.yaml",
+          "uri": "https://raw.githubusercontent.com/rgeerkens/deployment-environments/main/Environments/VotingApp/azure-voting.yaml",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
