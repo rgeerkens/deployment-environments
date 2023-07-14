@@ -27,8 +27,8 @@
       "name": "[parameters('clusterName')]",
       "location": "[variables('location')]",
       "sku": {
-                "name": "Basic",
-                "tier": "Free"
+        "name": "Basic",
+        "tier": "Free"
       },
       "identity": {
         "type": "SystemAssigned"
@@ -48,7 +48,7 @@
             "type": "VirtualMachineScaleSets",
             "enableAutoScaling": false,
             "powerState": {
-                "code": "Running"
+              "code": "Running"
             },
             "orchestratorVersion": "1.25.6",
             "enableNodePublicIP": false,
@@ -59,73 +59,39 @@
           }
         ],
         "servicePrincipalProfile": {
-                      "clientId": "msi"
+          "clientId": "msi"
         },
         "addonProfiles": {
-            "azureKeyvaultSecretsProvider": {
-                "enabled": false
-            },
-            "azurepolicy": {
-                "enabled": false
-            }
+          "azureKeyvaultSecretsProvider": {
+            "enabled": false
+          },
+          "azurepolicy": {
+            "enabled": false
+          }
         }
       }
     },
     {
-      "type": "Microsoft.ContainerInstance/containerGroups",
-       "apiVersion": "2021-06-01",
-      "name": "[concat(parameters('clusterName'), '-votingapp')]",
-      "location": "[variables('location')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "applyKubernetesManifests",
       "dependsOn": [
         "[resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))]"
       ],
       "properties": {
-        "containers": [
-          {
-            "name": "votingapp",
-            "properties": {
-              "image": "microsoft/azure-vote-front:v1",
-              "resources": {
-                "requests": {
-                  "cpu": 1,
-                  "memoryInGb": 1.5
-                }
-              },
-              "ports": [
-                {
-                  "protocol": "TCP",
-                  "port": 80
-                }
-              ],
-              "environmentVariables": [
-                {
-                  "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                  "value": "false"
-                }
-              ]
-            }
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "templateLink": {
+          "uri": "https://github.com/rgeerkens/deployment-environments/tree/main/Environments/VotingApp/azure-voting.yaml",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterName": {
+            "value": "[parameters('clusterName')]"
           }
-        ],
-        "identity": {
-          "type": "SystemAssigned",
-          "roleAssignments": [
-            {
-              "principalId": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('clusterName'))).identity.principalId]",
-              "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
-            }
-          ]
-        },
-        "ipAddress": {
-          "type": "Public",
-          "ports": [
-            {
-              "protocol": "TCP",
-              "port": 80
-            }
-          ]
-        },
-        "osType": "Linux",
-        "restartPolicy": "Always"
+        }
       }
     }
   ],
