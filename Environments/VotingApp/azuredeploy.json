@@ -5,20 +5,19 @@
     "clusterName": {
       "type": "string",
       "metadata": {
-        "description": "Naam van het Kubernetes-cluster."
+        "description": "Name of the AKS cluster."
       }
     },
     "nodeCount": {
       "type": "int",
       "defaultValue": 1,
       "metadata": {
-        "description": "Aantal knooppunten (nodes) in het cluster."
+        "description": "Number of nodes in the cluster."
       }
     }
   },
   "variables": {
     "location": "[resourceGroup().location]",
-    "kubernetesVersion": "1.18.10",
     "dnsPrefix": "[toLower(concat('dns', uniqueString(resourceGroup().id)))]"
   },
   "resources": [
@@ -28,7 +27,7 @@
       "name": "[parameters('clusterName')]",
       "location": "[variables('location')]",
       "properties": {
-        "kubernetesVersion": "[variables('kubernetesVersion')]",
+        "kubernetesVersion": "1.20.7",
         "dnsPrefix": "[variables('dnsPrefix')]",
         "enableRBAC": true,
         "agentPoolProfiles": [
@@ -36,70 +35,9 @@
             "name": "nodepool1",
             "count": "[parameters('nodeCount')]",
             "vmSize": "Standard_DS2_v2",
-            "osType": "Linux",
-            "storageProfile": "ManagedDisks"
+            "osDiskSizeGB": 30
           }
-        ],
-        "identity": {
-          "type": "SystemAssigned"
-        }
-      }
-    },
-    {
-      "type": "Microsoft.ContainerInstance/containerGroups",
-      "apiVersion": "2021-06-01",
-      "name": "[concat(parameters('clusterName'), '-votingapp')]",
-      "location": "[variables('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.ContainerService/managedClusters', parameters('clusterName'))]"
-      ],
-      "properties": {
-        "containers": [
-          {
-            "name": "votingapp",
-            "properties": {
-              "image": "microsoft/azure-vote-front:v1",
-              "resources": {
-                "requests": {
-                  "cpu": 1,
-                  "memoryInGb": 1.5
-                }
-              },
-              "ports": [
-                {
-                  "protocol": "TCP",
-                  "port": 80
-                }
-              ],
-              "environmentVariables": [
-                {
-                  "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
-                  "value": "false"
-                }
-              ]
-            }
-          }
-        ],
-        "identity": {
-          "type": "SystemAssigned",
-          "roleAssignments": [
-            {
-              "principalId": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('clusterName'))).identity.principalId]",
-              "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
-            }
-          ]
-        },
-        "ipAddress": {
-          "type": "Public",
-          "ports": [
-            {
-              "protocol": "TCP",
-              "port": 80
-            }
-          ]
-        },
-        "osType": "Linux",
-        "restartPolicy": "Always"
+        ]
       }
     }
   ],
