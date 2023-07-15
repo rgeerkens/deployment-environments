@@ -1,0 +1,141 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "ronny",
+      "metadata": {
+        "description": "Gebruikersnaam voor de Windows-server."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Wachtwoord voor de Windows-server."
+      }
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "W-VM-0001",
+      "metadata": {
+        "description": "Naam van de virtuele server."
+      }
+    },
+    "subnetResourceId": {
+      "type": "string",
+      "defaultvalue": "/subscriptions/e785b96c-7241-4f56-8a0b-da8f053fa730/resourceGroups/network-services/providers/Microsoft.Network/virtualNetworks/core-network/subnets/virtual-machines"
+    },
+    "Counter": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of storage accounts to provision."
+      }
+    }
+  },
+  "variables": {
+    "randomString": "[substring(uniqueString(resourceGroup().id, deployment().name), 0, 10)]",
+    "resourceName": "[if(not(empty(parameters('vmName'))), replace(parameters('vmName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
+    "virtualmachineName": "[concat(take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22), variables('randomString'))]",
+    "publicIPName": "[take(toLower(replace(replace(variables('virtualmachineName'), '-', ''), '_', '')), 22)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('publicIPName'), copyIndex())]",
+      "copy": {
+        "name": "ipLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('publicIPName'), copyIndex())]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex(), 'nic')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[concat(variables('virtualmachineName'), copyIndex(), 'ipconfig')]",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('subnetResourceId')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-03-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex())]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_D2s_v3"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2019-Datacenter",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage",
+            "osType": "Windows",
+            "image": {
+              "publisher": "MicrosoftWindowsServer",
+              "offer": "WindowsServer",
+              "sku": "2019-Datacenter",
+              "version": "latest"
+            }
+          }
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('virtualmachineName'), copyIndex())]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "windowsConfiguration": {
+            "provisionVMAgent": true,
+            "enableAutomaticUpdates": true
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
