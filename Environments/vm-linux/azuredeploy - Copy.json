@@ -1,0 +1,163 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "ronny",
+      "metadata": {
+        "description": "Gebruikersnaam voor de Linux-server."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Wachtwoord voor de Linux-server."
+      }
+    },
+    "vmName": {
+      "type": "string",
+      "defaultValue": "L-VM-0001",
+      "metadata": {
+        "description": "Naam van de virtuele server."
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "core-network",
+      "metadata": {
+        "description": "Naam van het bestaande virtuele netwerk (VNet)."
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "virtual-machines",
+      "metadata": {
+        "description": "Naam van het subnet in het virtuele netwerk."
+      }
+    },
+    "Counter": {
+      "type": "int",
+      "defaultValue": 1,
+      "metadata": {
+        "description": "Number of storage accounts to provision."
+      }
+    }
+  },
+  "variables": {
+    "resourceName": "[if(not(empty(parameters('vmName'))), replace(parameters('vmName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
+    "virtualmachineName": "[take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22)]",
+    "publicIPName": "[take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('publicIPName'), copyIndex())]",
+      "copy": {
+        "name": "ipLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('publicIPName'), copyIndex())]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/8"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('subnetName')]",
+            "properties": {
+              "addressPrefix": "10.10.0.0/16"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex(), 'nic')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[concat(variables('virtualmachineName'), copyIndex(), 'ipconfig')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-03-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex())]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_D2s_v3"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "18.04-LTS",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('virtualmachineName'), copyIndex())]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
