@@ -110,14 +110,17 @@
           },
           "osDisk": {
             "createOption": "FromImage",
-            "osType": "Windows",
-            "image": {
-              "publisher": "MicrosoftWindowsServer",
-              "offer": "WindowsServer",
-              "sku": "2019-Datacenter",
-              "version": "latest"
+            "managedDisk": {
+              "storageAccountType": "StandardSSD_LRS"
             }
-          }
+          },
+          "dataDisks": [
+            {
+              "diskSizeGB": 1023,
+              "lun": 0,
+              "createOption": "Empty"
+            }
+          ]
         },
         "osProfile": {
           "computerName": "[concat(variables('virtualmachineName'), copyIndex())]",
