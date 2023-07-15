@@ -30,7 +30,7 @@
       "type": "int",
       "defaultValue": 1,
       "metadata": {
-        "description": "Number of storage accounts to provision."
+        "description": "Number of Windows Servers to provision."
       }
     }
   },
