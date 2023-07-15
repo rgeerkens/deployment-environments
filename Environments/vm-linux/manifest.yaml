@@ -15,7 +15,7 @@ parameters:
   - id: adminPasswordOrKey
     name: 'Password Admin'
     description: 'Administrator Password.'
-    type: securestring
+    type: string
 
   - id: Counter
     name: 'Number Of Servers'
