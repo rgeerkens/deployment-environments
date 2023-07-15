@@ -22,20 +22,6 @@
         "description": "Naam van de virtuele server."
       }
     },
-    "vnetName": {
-      "type": "string",
-      "defaultValue": "core-network",
-      "metadata": {
-        "description": "Naam van het bestaande virtuele netwerk (VNet)."
-      }
-    },
-    "subnetName": {
-      "type": "string",
-      "defaultValue": "virtual-machines",
-      "metadata": {
-        "description": "Naam van het subnet in het virtuele netwerk."
-      }
-    },
     "subnetResourceId": {
       "type": "string",
       "defaultvalue": "/subscriptions/e785b96c-7241-4f56-8a0b-da8f053fa730/resourceGroups/network-services/providers/Microsoft.Network/virtualNetworks/core-network/subnets/virtual-machines"
