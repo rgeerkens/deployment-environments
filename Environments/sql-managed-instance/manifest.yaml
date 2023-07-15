@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://github.com/Azure/deployment-environments/releases/download/2022-11-11-preview/manifest.schema.json
-name: SQL-Managed-Instance
+name: SQL-Server
 version: 1.0.0
-summary: SQL Managed Instance Environment
-description: Deploys a SQL Managed Instance
+summary: SQL Server Environment
+description: Deploys a SQL Server
 runner: ARM
 templatePath: azuredeploy.json
 
