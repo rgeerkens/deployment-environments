@@ -80,6 +80,9 @@
         "count": "[parameters('Counter')]"
       },
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+      ],
       "properties": {
         "ipConfigurations": [
           {
