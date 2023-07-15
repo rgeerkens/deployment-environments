@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://github.com/Azure/deployment-environments/releases/download/2022-11-11-preview/manifest.schema.json
+name: Server-Linux
+version: 1.0.0
+summary: Linux Server Environment
+description: Deploys a Linux Server
+runner: ARM
+templatePath: azuredeploy.json
+
+parameters:
+  - id: vmName
+    name: 'Name Of Server'
+    description: 'Name of the Linux Server.'
+    type: string
+
+  - id: adminPasswordOrKey
+    name: 'Password Admin'
+    description: 'Administrator Password.'
+    type: securestring
+
+  - id: Counter
+    name: 'Number Of Servers'
+    description: 'Nummer of Servers.'
+    type: integer
