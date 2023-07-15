@@ -36,6 +36,10 @@
         "description": "Naam van het subnet in het virtuele netwerk."
       }
     },
+    "subnetResourceId": {
+      "type": "string",
+      "defaultvalue": "/subscriptions/e785b96c-7241-4f56-8a0b-da8f053fa730/resourceGroups/network-services/providers/Microsoft.Network/virtualNetworks/core-network/subnets/virtual-machines"
+    },
     "Counter": {
       "type": "int",
       "defaultValue": 1,
@@ -64,6 +68,31 @@
         "dnsSettings": {
           "domainNameLabel": "[concat(variables('publicIPName'), copyIndex())]"
         }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex(), 'nic')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[concat(variables('virtualmachineName'), copyIndex(), 'ipconfig')]",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('subnetResourceId')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+              }
+            }
+          }
+        ]
       }
     }
   ]
