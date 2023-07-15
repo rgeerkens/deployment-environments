@@ -17,7 +17,7 @@
     },
     "vmName": {
       "type": "string",
-      "defaultValue": "W-VM-0001",
+      "defaultValue": "W-VM-01",
       "metadata": {
         "description": "Naam van de virtuele server."
       }
@@ -35,7 +35,7 @@
     }
   },
   "variables": {
-    "randomString": "[substring(uniqueString(resourceGroup().id, deployment().name), 0, 10)]",
+    "randomString": "[substring(uniqueString(resourceGroup().id, deployment().name), 0, 5)]",
     "resourceName": "[if(not(empty(parameters('vmName'))), replace(parameters('vmName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
     "virtualmachineName": "[concat(take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22), variables('randomString'))]",
     "publicIPName": "[take(toLower(replace(replace(variables('virtualmachineName'), '-', ''), '_', '')), 22)]"
