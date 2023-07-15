@@ -1,306 +1,163 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "metadata": {
-    "_generator": {
-      "name": "bicep",
-      "version": "0.17.1.54307",
-      "templateHash": "11453007703022839041"
-    }
-  },
   "parameters": {
-    "vmName": {
-      "type": "string",
-      "defaultValue": "L-VM-0001",
-      "metadata": {
-        "description": "The name of you Virtual Machine."
-      }
-    },
     "adminUsername": {
       "type": "string",
       "defaultValue": "ronny",
       "metadata": {
-        "description": "Username for the Virtual Machine."
+        "description": "Gebruikersnaam voor de Linux-server."
       }
     },
-    "authenticationType": {
-      "type": "string",
-      "defaultValue": "password",
-      "allowedValues": [
-        "sshPublicKey",
-        "password"
-      ],
-      "metadata": {
-        "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
-      }
-    },
-    "adminPasswordOrKey": {
+    "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+        "description": "Wachtwoord voor de Linux-server."
       }
     },
-    "dnsLabelPrefix": {
+    "vmName": {
       "type": "string",
-      "defaultValue": "[toLower(format('{0}-{1}', parameters('vmName'), uniqueString(resourceGroup().id)))]",
+      "defaultValue": "L-VM-0001",
       "metadata": {
-        "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+        "description": "Naam van de virtuele server."
       }
     },
-    "ubuntuOSVersion": {
-      "type": "string",
-      "defaultValue": "Ubuntu-2204",
-      "allowedValues": [
-        "Ubuntu-1804",
-        "Ubuntu-2004",
-        "Ubuntu-2204"
-      ],
-      "metadata": {
-        "description": "The Ubuntu version for the VM. This will pick a fully patched image of this given Ubuntu version."
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources."
-      }
-    },
-    "vmSize": {
-      "type": "string",
-      "defaultValue": "Standard_D2s_v3",
-      "metadata": {
-        "description": "The size of the VM"
-      }
-    },
-    "virtualNetworkName": {
+    "vnetName": {
       "type": "string",
       "defaultValue": "core-network",
       "metadata": {
-        "description": "Name of the VNET"
+        "description": "Naam van het bestaande virtuele netwerk (VNet)."
       }
     },
     "subnetName": {
       "type": "string",
       "defaultValue": "virtual-machines",
       "metadata": {
-        "description": "Name of the subnet in the virtual network"
+        "description": "Naam van het subnet in het virtuele netwerk."
       }
     },
-    "networkSecurityGroupName": {
-      "type": "string",
-      "defaultValue": "SecGroupNet",
+    "Counter": {
+      "type": "int",
+      "defaultValue": 1,
       "metadata": {
-        "description": "Name of the Network Security Group"
-      }
-    },
-    "securityType": {
-      "type": "string",
-      "defaultValue": "TrustedLaunch",
-      "allowedValues": [
-        "Standard",
-        "TrustedLaunch"
-      ],
-      "metadata": {
-        "description": "Security Type of the Virtual Machine."
+        "description": "Number of storage accounts to provision."
       }
     }
   },
   "variables": {
-    "imageReference": {
-      "Ubuntu-1804": {
-        "publisher": "Canonical",
-        "offer": "UbuntuServer",
-        "sku": "18_04-lts-gen2",
-        "version": "latest"
-      },
-      "Ubuntu-2004": {
-        "publisher": "Canonical",
-        "offer": "0001-com-ubuntu-server-focal",
-        "sku": "20_04-lts-gen2",
-        "version": "latest"
-      },
-      "Ubuntu-2204": {
-        "publisher": "Canonical",
-        "offer": "0001-com-ubuntu-server-jammy",
-        "sku": "22_04-lts-gen2",
-        "version": "latest"
-      }
-    },
-    "publicIPAddressName": "[format('{0}PublicIP', parameters('vmName'))]",
-    "networkInterfaceName": "[format('{0}NetInt', parameters('vmName'))]",
-    "osDiskType": "Standard_LRS",
-    "subnetAddressPrefix": "10.10.0.0/16",
-    "addressPrefix": "10.0.0.0/8",
-    "linuxConfiguration": {
-      "disablePasswordAuthentication": false,
-      "ssh": {
-        "publicKeys": [
-          {
-            "path": "[format('/home/{0}/.ssh/authorized_keys', parameters('adminUsername'))]",
-            "keyData": "[parameters('adminPasswordOrKey')]"
-          }
-        ]
-      }
-    },
-    "securityProfileJson": {
-      "uefiSettings": {
-        "secureBootEnabled": true,
-        "vTpmEnabled": true
-      },
-      "securityType": "[parameters('securityType')]"
-    },
-    "extensionName": "GuestAttestation",
-    "extensionPublisher": "Microsoft.Azure.Security.LinuxAttestation",
-    "extensionVersion": "1.0",
-    "maaTenantName": "GuestAttestation",
-    "maaEndpoint": "[substring('emptystring', 0, 0)]"
+    "resourceName": "[if(not(empty(parameters('vmName'))), replace(parameters('vmName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
+    "virtualmachineName": "[take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22)]",
+    "publicIPName": "[take(toLower(replace(replace(variables('resourceName'), '-', ''), '_', '')), 22)]"
   },
   "resources": [
     {
-      "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2021-05-01",
-      "name": "[variables('networkInterfaceName')]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "ipConfigurations": [
-          {
-            "name": "ipconfig1",
-            "properties": {
-              "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('subnetName'))]"
-              },
-              "privateIPAllocationMethod": "Dynamic",
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
-              }
-            }
-          }
-        ],
-        "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
-        }
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('publicIPName'), copyIndex())]",
+      "copy": {
+        "name": "ipLoop",
+        "count": "[parameters('Counter')]"
       },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
-      ]
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[concat(variables('publicIPName'), copyIndex())]"
+        }
+      }
     },
     {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "apiVersion": "2021-05-01",
-      "name": "[parameters('networkSecurityGroupName')]",
-      "location": "[parameters('location')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2021-02-01",
+      "name": "[parameters('vnetName')]",
+      "location": "[resourceGroup().location]",
       "properties": {
-        "securityRules": [
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/8"
+          ]
+        },
+        "subnets": [
           {
-            "name": "SSH",
+            "name": "[parameters('subnetName')]",
             "properties": {
-              "priority": 1000,
-              "protocol": "Tcp",
-              "access": "Allow",
-              "direction": "Inbound",
-              "sourceAddressPrefix": "*",
-              "sourcePortRange": "*",
-              "destinationAddressPrefix": "*",
-              "destinationPortRange": "22"
+              "addressPrefix": "10.10.0.0/16"
             }
           }
         ]
       }
     },
     {
-      "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2021-05-01",
-      "name": "[variables('publicIPAddressName')]",
-      "location": "[parameters('location')]",
-      "sku": {
-        "name": "Basic"
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2021-02-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex(), 'nic')]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[parameters('Counter')]"
       },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', concat(variables('virtualmachineName'), copyIndex()))]"
+      ],
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
-        "publicIPAddressVersion": "IPv4",
-        "dnsSettings": {
-          "domainNameLabel": "[parameters('dnsLabelPrefix')]"
-        },
-        "idleTimeoutInMinutes": 4
+        "ipConfigurations": [
+          {
+            "name": "[concat(variables('virtualmachineName'), copyIndex(), 'ipconfig')]",
+            "properties": {
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat(variables('publicIPName'), copyIndex()))]"
+              }
+            }
+          }
+        ]
       }
     },
     {
       "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2021-11-01",
-      "name": "[parameters('vmName')]",
-      "location": "[parameters('location')]",
+      "apiVersion": "2021-03-01",
+      "name": "[concat(variables('virtualmachineName'), copyIndex())]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[parameters('Counter')]"
+      },
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
+      ],
       "properties": {
         "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
+          "vmSize": "Standard_D2s_v3"
         },
         "storageProfile": {
-          "osDisk": {
-            "createOption": "FromImage",
-            "managedDisk": {
-              "storageAccountType": "[variables('osDiskType')]"
-            }
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "18.04-LTS",
+            "version": "latest"
           },
-          "imageReference": "[variables('imageReference')[parameters('ubuntuOSVersion')]]"
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('virtualmachineName'), copyIndex())]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false
+          }
         },
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('virtualmachineName'), copyIndex(), 'nic'))]"
             }
           ]
-        },
-        "osProfile": {
-          "computerName": "[parameters('vmName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPasswordOrKey')]",
-          "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), null(), variables('linuxConfiguration'))]"
-        },
-        "securityProfile": "[if(equals(parameters('securityType'), 'TrustedLaunch'), variables('securityProfileJson'), null())]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
-      ]
-    },
-    {
-      "condition": "[and(equals(parameters('securityType'), 'TrustedLaunch'), and(equals(variables('securityProfileJson').uefiSettings.secureBootEnabled, true()), equals(variables('securityProfileJson').uefiSettings.vTpmEnabled, true())))]",
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "apiVersion": "2022-03-01",
-      "name": "[format('{0}/{1}', parameters('vmName'), variables('extensionName'))]",
-      "location": "[parameters('location')]",
-      "properties": {
-        "publisher": "[variables('extensionPublisher')]",
-        "type": "[variables('extensionName')]",
-        "typeHandlerVersion": "[variables('extensionVersion')]",
-        "autoUpgradeMinorVersion": true,
-        "enableAutomaticUpgrade": true,
-        "settings": {
-          "AttestationConfig": {
-            "MaaSettings": {
-              "maaEndpoint": "[variables('maaEndpoint')]",
-              "maaTenantName": "[variables('maaTenantName')]"
-            }
-          }
         }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
-      ]
+      }
     }
-  ],
-  "outputs": {
-    "adminUsername": {
-      "type": "string",
-      "value": "[parameters('adminUsername')]"
-    },
-    "hostname": {
-      "type": "string",
-      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName')), '2021-05-01').dnsSettings.fqdn]"
-    },
-    "sshCommand": {
-      "type": "string",
-      "value": "[format('ssh {0}@{1}', parameters('adminUsername'), reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName')), '2021-05-01').dnsSettings.fqdn)]"
-    }
-  }
+  ]
 }
