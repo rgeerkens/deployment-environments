@@ -8,12 +8,12 @@ templatePath: azuredeploy.json
 
 parameters:
   - id: name
-    name: Name
+    name: 'Name Of Storage Account'
     description: 'Name of the Storage Account.'
     type: string
 
   - id: Counter
-    name: Counter
+    name: 'Number Of Storage Acconts'
     description: 'Nummer of Storage Accounts.'
     type: integer
 
