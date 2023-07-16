@@ -15,4 +15,5 @@ parameters:
   - id: Counter
     name: 'Number Of KeyVaults'
     description: 'Nummer of Storage Accounts.'
+    default: 1
     type: integer
