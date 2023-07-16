@@ -25,14 +25,12 @@
     },
     "primaryRegion": {
       "type": "string",
-      "defaultValue": "West-Europe",
       "metadata": {
         "description": "The primary replica region for the Cosmos DB account."
       }
     },
     "secondaryRegion": {
       "type": "string",
-      "defaultValue": "East-Europe",
       "metadata": {
         "description": "The secondary replica region for the Cosmos DB account."
       }
