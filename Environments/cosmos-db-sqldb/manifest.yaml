@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://github.com/Azure/deployment-environments/releases/download/2022-11-11-preview/manifest.schema.json
+name: CosmosDB-sqlDB
+version: 1.0.0
+summary: Azure CosmosDB Environment
+description: Deploys an Azure CosmosDB-sqlDB
+runner: ARM
+templatePath: azuredeploy.json
+
+parameters:
+  - id: accountName
+    name: 'Name Of CosmosDB Account'
+    description: 'Name of the Azure CosmosDB Account.'
+    type: string
