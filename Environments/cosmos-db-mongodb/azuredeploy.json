@@ -32,7 +32,7 @@
     },
     "secondaryRegion": {
       "type": "string",
-      "defaultValue": "easteurope",
+      "defaultValue": "northeurope",
       "metadata": {
         "description": "The secondary replica region for the Cosmos DB account."
       }
