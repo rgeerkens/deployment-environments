@@ -50,18 +50,23 @@
   "resources": [
     {
       "type": "Microsoft.Sql/managedInstances",
-      "apiVersion": "2021-02-01-preview",
+      "apiVersion": "2021-11-01-preview",
       "name": "[parameters('managedSqlInstanceName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "subnetId": "[variables('subnetResourceId')]",
         "administratorLogin": "[parameters('adminLogin')]",
         "administratorLoginPassword": "[parameters('adminPassword')]",
+        "identity": {
+          "type": "SystemAssigned"
+        },
         "sku": {
           "name": "GP_Gen5",
           "tier": "GeneralPurpose",
-          "family": "Gen5",
-          "capacity": 2
+          "family": "GP_Gen5",
+          "capacity": 2,
+          "vCores": 4,
+          "licenseType": "LicenseIncluded"
         },
         "storageSizeInGB": 128
       }
