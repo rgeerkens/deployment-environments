@@ -25,6 +25,7 @@
     },
     "primaryRegion": {
       "type": "string",
+      "defaultValue": "westeurope",
       "metadata": {
         "description": "The primary replica region for the Cosmos DB account."
       }
