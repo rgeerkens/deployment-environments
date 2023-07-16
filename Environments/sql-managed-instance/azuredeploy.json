@@ -108,6 +108,7 @@
   "variables": {
     "networkSecurityGroupName": "[format('SQLMI-{0}-NSG', parameters('managedInstanceName'))]",
     "subnetRef": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetWorks/subnets', parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]",
+    "resourceName": "[if(not(empty(parameters('managedInstanceName'))), replace(parameters('managedInstanceName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
     "routeTableName": "[format('SQLMI-{0}-Route-Table', parameters('managedInstanceName'))]"
   },
   "resources": [
@@ -189,7 +190,7 @@
     {
       "type": "Microsoft.Sql/managedInstances",
       "apiVersion": "2021-11-01-preview",
-      "name": "[parameters('managedInstanceName')]",
+      "name": "[variables('resourceName')]",
       "location": "[parameters('location')]",
       "sku": {
         "name": "[parameters('skuName')]"
@@ -204,10 +205,7 @@
         "storageSizeInGB": "[parameters('storageSizeInGB')]",
         "vCores": "[parameters('vCores')]",
         "licenseType": "[parameters('licenseType')]"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
-      ]
+      }
     }
   ]
 }
