@@ -154,7 +154,6 @@
       "location": "[parameters('location')]",
       "kind": "MongoDB",
       "properties": {
-        "enableFreeTier": true,
         "consistencyPolicy": "[variables('consistencyPolicy')[parameters('defaultConsistencyLevel')]]",
         "locations": "[variables('locations')]",
         "databaseAccountOfferType": "Standard",
