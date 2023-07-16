@@ -18,6 +18,7 @@
     },
     "publisherEmail": {
       "type": "string",
+      "defaultValue": "ronny@geerkens.onmicrosoft.com",
       "minLength": 1,
       "metadata": {
         "description": "The email address of the owner of the service"
@@ -25,6 +26,7 @@
     },
     "publisherName": {
       "type": "string",
+      "defaultValue": "Ronny Geerkens",
       "minLength": 1,
       "metadata": {
         "description": "The name of the owner of the service"
