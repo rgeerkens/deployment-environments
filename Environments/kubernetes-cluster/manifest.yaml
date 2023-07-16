@@ -15,4 +15,5 @@ parameters:
   - id: agentCount
     name: 'Number Of Nodes In The Cluster'
     description: 'Nodes in cluster.'
+    default: 1
     type: integer

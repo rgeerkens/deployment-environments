@@ -16,8 +16,10 @@ parameters:
     name: 'Password Admin'
     description: 'Administrator Password.'
     type: string
+    required: true
 
   - id: Counter
     name: 'Number Of Servers'
     description: 'Nummer of Servers.'
+    default: 1
     type: integer

@@ -15,6 +15,7 @@ parameters:
   - id: Counter
     name: 'Number Of Storage Acconts'
     description: 'Nummer of Storage Accounts.'
+    default: 1
     type: integer
 
   - id: supportsHttpsTrafficOnly

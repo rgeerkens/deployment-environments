@@ -16,3 +16,4 @@ parameters:
     name: 'Password Admin'
     description: 'Administrator Password.'
     type: string
+    required: true
