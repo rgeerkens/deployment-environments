@@ -106,10 +106,10 @@
     }
   },
   "variables": {
-    "networkSecurityGroupName": "[format('SQLMI-{0}-NSG', parameters('managedInstanceName'))]",
     "subnetRef": "[resourceId(parameters('existingVnetResourceGroup'), 'Microsoft.Network/virtualNetWorks/subnets', parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]",
     "resourceName": "[if(not(empty(parameters('managedInstanceName'))), replace(parameters('managedInstanceName'), ' ', '-'), format('a{0}', uniqueString(resourceGroup().id)))]",
-    "routeTableName": "[format('SQLMI-{0}-Route-Table', parameters('managedInstanceName'))]"
+    "networkSecurityGroupName": "[format('SQLMI-{0}-NSG', variables('resourceName'))]",
+    "routeTableName": "[format('SQLMI-{0}-Route-Table', variables('resourceName'))]"
   },
   "resources": [
     {
