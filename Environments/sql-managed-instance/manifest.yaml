@@ -7,12 +7,12 @@ runner: ARM
 templatePath: azuredeploy.json
 
 parameters:
-  - id: virtualMachineName
+  - id: managedInstanceName
     name: 'Name Of The Managed Instance'
     description: 'Name of the Managed Instance.'
     type: string
 
-  - id: adminPassword
+  - id: administratorLoginPassword
     name: 'Password Admin'
     description: 'Administrator Password.'
     type: string
