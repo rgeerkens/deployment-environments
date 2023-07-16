@@ -11,8 +11,10 @@ parameters:
     name: 'Name Of The Managed Instance'
     description: 'Name of the Managed Instance.'
     type: string
+    required: true
 
   - id: adminPassword
     name: 'Password Admin'
     description: 'Administrator Password.'
     type: string
+    required: true

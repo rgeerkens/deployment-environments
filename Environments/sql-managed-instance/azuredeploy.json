@@ -24,7 +24,7 @@
     },
     "subnetName": {
       "type": "string",
-      "defaultValue": "virtual-machines",
+      "defaultValue": "sql-instances",
       "metadata": {
         "description": "Naam van het bestaande subnet."
       }
